@@ -299,10 +299,12 @@
         
           
             <hr>
-<p><strong>前记</strong></p>
-<blockquote>
+<h1 id="前记"><a href="#前记" class="headerlink" title="前记"></a>前记</h1><blockquote>
 <p>&emsp;&emsp;&emsp;&emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似<a href="https://issues.apache.org/jira/browse/KAFKA-799" title="KAFKA-799" target="_blank" rel="external">KAFKA-799</a>，最终解决办法是删除ZK上这2个topic节点。</p>
 </blockquote>
+<hr>
+<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><hr>
+<p><code>未完待续....</code></p>
 
           
         
