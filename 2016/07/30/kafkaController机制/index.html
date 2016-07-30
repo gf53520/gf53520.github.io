@@ -85,18 +85,18 @@
 
 
 <meta name="description" content="前记
-&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个topic">
+&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方jira上有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kafkaController机制">
 <meta property="og:url" content="http://yoursite.com/2016/07/30/kafkaController机制/index.html">
 <meta property="og:site_name" content="guifeng">
 <meta property="og:description" content="前记
-&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个topic">
-<meta property="og:updated_time" content="2016-07-30T02:11:24.000Z">
+&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方jira上有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个">
+<meta property="og:updated_time" content="2016-07-30T02:14:57.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafkaController机制">
 <meta name="twitter:description" content="前记
-&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个topic">
+&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方jira上有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个">
 
 
 
@@ -300,7 +300,7 @@
       
         <hr>
 <h1 id="前记"><a href="#前记" class="headerlink" title="前记"></a>前记</h1><blockquote>
-<p>&emsp;&emsp;&emsp;&emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似<a href="https://issues.apache.org/jira/browse/KAFKA-799" title="KAFKA-799" target="_blank" rel="external">KAFKA-799</a>，最终解决办法是删除ZK上这2个topic节点。</p>
+<p>&emsp;&emsp;&emsp;&emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方jira上有个issue与上述情况很类似<a href="https://issues.apache.org/jira/browse/KAFKA-799" title="KAFKA-799" target="_blank" rel="external">KAFKA-799</a>，最终解决办法是删除ZK上这2个topic节点。</p>
 </blockquote>
 <hr>
 <h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><hr>
