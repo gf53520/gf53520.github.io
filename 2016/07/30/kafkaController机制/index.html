@@ -92,7 +92,7 @@
 <meta property="og:site_name" content="guifeng">
 <meta property="og:description" content="前记
 &amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个topic">
-<meta property="og:updated_time" content="2016-07-30T02:09:28.000Z">
+<meta property="og:updated_time" content="2016-07-30T02:11:24.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kafkaController机制">
 <meta name="twitter:description" content="前记
@@ -265,8 +265,8 @@
               <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/learning/" itemprop="url" rel="index">
-                    <span itemprop="name">learning</span>
+                  <a href="/categories/kafka/" itemprop="url" rel="index">
+                    <span itemprop="name">kafka</span>
                   </a>
                 </span>
 
