@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="kafka," />
 
 
 
@@ -84,12 +84,22 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="guifeng">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="前记
+
+&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个topi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kafkaController机制">
+<meta property="og:url" content="http://yoursite.com/2016/07/30/kafkaController机制/index.html">
 <meta property="og:site_name" content="guifeng">
+<meta property="og:description" content="前记
+
+&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个topi">
+<meta property="og:updated_time" content="2016-07-30T02:05:32.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="guifeng">
+<meta name="twitter:title" content="kafkaController机制">
+<meta name="twitter:description" content="前记
+
+&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似KAFKA-799，最终解决办法是删除ZK上这2个topi">
 
 
 
@@ -110,9 +120,9 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2016/07/30/kafkaController机制/"/>
 
-  <title> guifeng </title>
+  <title> kafkaController机制 | guifeng </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -133,9 +143,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -212,9 +220,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -234,10 +242,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/07/30/kafkaController机制/" itemprop="url">
-                  kafkaController机制
-                </a>
+                kafkaController机制
               
             
           </h1>
@@ -296,157 +301,65 @@
       
 
       
-        
-          
-            <hr>
+        <hr>
 <p><strong>前记</strong></p>
 <blockquote>
 <p>&emsp;&emsp;&emsp;&emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方有个issue与上述情况很类似<a href="https://issues.apache.org/jira/browse/KAFKA-799" title="KAFKA-799" target="_blank" rel="external">KAFKA-799</a>，最终解决办法是删除ZK上这2个topic节点。</p>
 </blockquote>
 
-          
+      
+    </div>
+
+    <div>
+      
         
+
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/07/27/thanks/" itemprop="url">
-                  Thanks oplinjie
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-07-27T22:15:00+08:00" content="2016-07-27">
-              2016-07-27
-            </time>
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/life/" itemprop="url" rel="index">
-                    <span itemprop="name">life</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
+            <a href="/tags/kafka/" rel="tag">#kafka</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <p> Thanks Linjie~</p>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/27/thanks/" rel="next" title="Thanks oplinjie">
+                <i class="fa fa-chevron-left"></i> Thanks oplinjie
+              </a>
+            
+          </div>
 
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
       
 
       
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -454,6 +367,10 @@
 
 
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
         
@@ -473,8 +390,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="http://img5.imgtn.bdimg.com/it/u=2874763218,1653340119&fm=21&gp=0.jpg"
@@ -544,6 +470,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <p class="post-toc-empty">此文章未包含目录</p>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -640,6 +577,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
