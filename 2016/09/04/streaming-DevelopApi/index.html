@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="spark," />
 
 
 
@@ -84,12 +84,19 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="guifeng">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="缘由 最近为了获取Spark Streaming的metrics，参考Streaming代码并发现Streaming提供了抽象接口StreamingListener, 以供用户去自定义Listener，当前Streaming已经存在一些Listener，如StreamingJobProgressListener, RateController, StatsReportListener.
+Strea">
+<meta property="og:type" content="article">
+<meta property="og:title" content="streaming DevelopApi">
+<meta property="og:url" content="http://yoursite.com/2016/09/04/streaming-DevelopApi/index.html">
 <meta property="og:site_name" content="guifeng">
+<meta property="og:description" content="缘由 最近为了获取Spark Streaming的metrics，参考Streaming代码并发现Streaming提供了抽象接口StreamingListener, 以供用户去自定义Listener，当前Streaming已经存在一些Listener，如StreamingJobProgressListener, RateController, StatsReportListener.
+Strea">
+<meta property="og:updated_time" content="2016-09-04T15:11:06.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="guifeng">
+<meta name="twitter:title" content="streaming DevelopApi">
+<meta name="twitter:description" content="缘由 最近为了获取Spark Streaming的metrics，参考Streaming代码并发现Streaming提供了抽象接口StreamingListener, 以供用户去自定义Listener，当前Streaming已经存在一些Listener，如StreamingJobProgressListener, RateController, StatsReportListener.
+Strea">
 
 
 
@@ -110,9 +117,9 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2016/09/04/streaming-DevelopApi/"/>
 
-  <title> guifeng </title>
+  <title> streaming DevelopApi | guifeng </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -133,9 +140,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -212,9 +217,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -234,10 +239,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/09/04/streaming-DevelopApi/" itemprop="url">
-                  streaming DevelopApi
-                </a>
+                streaming DevelopApi
               
             
           </h1>
@@ -277,276 +279,65 @@
       
 
       
-        
-          
-            <h2 id="缘由"><a href="#缘由" class="headerlink" title="缘由"></a>缘由</h2><p> 最近为了获取Spark Streaming的metrics，参考Streaming代码并发现Streaming提供了抽象接口<code>StreamingListener</code>, 以供用户去自定义Listener，当前Streaming已经存在一些Listener，如<code>StreamingJobProgressListener</code>, <code>RateController</code>, <code>StatsReportListener</code>.</p>
+        <h2 id="缘由"><a href="#缘由" class="headerlink" title="缘由"></a>缘由</h2><p> 最近为了获取Spark Streaming的metrics，参考Streaming代码并发现Streaming提供了抽象接口<code>StreamingListener</code>, 以供用户去自定义Listener，当前Streaming已经存在一些Listener，如<code>StreamingJobProgressListener</code>, <code>RateController</code>, <code>StatsReportListener</code>.</p>
 <h3 id="StreamingListener接口与应用"><a href="#StreamingListener接口与应用" class="headerlink" title="StreamingListener接口与应用"></a>StreamingListener接口与应用</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/** Called when a receiver has reported an error */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onReceiverError</span></span>(receiverError: <span class="type">StreamingListenerReceiverError</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when a receiver has been stopped */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onReceiverStopped</span></span>(receiverStopped: <span class="type">StreamingListenerReceiverStopped</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when a batch of jobs has been submitted for processing. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchSubmitted</span></span>(batchSubmitted: <span class="type">StreamingListenerBatchSubmitted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a batch of jobs has started.  */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchStarted</span></span>(batchStarted: <span class="type">StreamingListenerBatchStarted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a batch of jobs has completed. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchCompleted</span></span>(batchCompleted: <span class="type">StreamingListenerBatchCompleted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a job of a batch has started. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onOutputOperationStarted</span></span>(</div><div class="line">      outputOperationStarted: <span class="type">StreamingListenerOutputOperationStarted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a job of a batch has completed. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onOutputOperationCompleted</span></span>(</div><div class="line">      outputOperationCompleted: <span class="type">StreamingListenerOutputOperationCompleted</span>) &#123; &#125;</div></pre></td></tr></table></figure>
 <p>如上所见，<code>StreamingListener</code> trait提供了各种接口，其中利用<code>onBatchCompleted</code>可实现在每个batch执行结束之后kafka offset的保存，而不是在Streaming每个batch未执行之前就存储offset; 除此以外，综合利用这些接口可以获取Spark UI上各种metrics, 从而不需要使用Spark自带的Metrics系统（<code>Source</code>）实现metrics获取，并且自己实现具有很大的灵活性（需要注意操作阻塞问题，最好在函数内部异步执行较重的操作）。</p>
 <p>Ps: Streaming 其他DeveloperApi</p>
  <figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"> $ grep -n <span class="string">":: DeveloperApi ::"</span> src</div><div class="line">src/main/java/org/apache/spark/streaming/<span class="type">StreamingContextState</span>.java:<span class="number">23</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/java/org/apache/spark/streaming/util/<span class="type">WriteAheadLog</span>.java:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/java/org/apache/spark/streaming/util/<span class="type">WriteAheadLogRecordHandle</span>.java:<span class="number">21</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/api/java/<span class="type">JavaStreamingContext</span>.scala:<span class="number">599</span>:   * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">35</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">49</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">104</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">Receiver</span>.scala:<span class="number">29</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">BatchInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">InputInfoTracker</span>.scala:<span class="number">27</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">OutputOperationInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">ReceiverInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">26</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">62</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">98</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/<span class="type">StreamingContext</span>.scala:<span class="number">574</span>:   * :: <span class="type">DeveloperApi</span> ::</div></pre></td></tr></table></figure>
 
-          
+      
+    </div>
+
+    <div>
+      
         
+
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/07/30/kafkaController机制/" itemprop="url">
-                  kafkaController机制
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-07-30T09:26:28+08:00" content="2016-07-30">
-              2016-07-30
-            </time>
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/learning/" itemprop="url" rel="index">
-                    <span itemprop="name">learning</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
+            <a href="/tags/spark/" rel="tag">#spark</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <hr>
-<h1 id="前记"><a href="#前记" class="headerlink" title="前记"></a>前记</h1><blockquote>
-<p>&emsp;&emsp;&emsp;&emsp;昨天线上kafka集群频繁出现controller选举，主要原因是zookeeper的/brokers/topics中存在2个topic元信息为null(原因暂未知)，使得json解析失败，最终导致controller选举一直处于失败状态。kafka官方jira上有个issue与上述情况很类似<a href="https://issues.apache.org/jira/browse/KAFKA-799" title="KAFKA-799" target="_blank" rel="external">KAFKA-799</a>，最终解决办法是删除ZK上这2个topic节点。</p>
-</blockquote>
-<hr>
-<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><hr>
-<p><code>未完待续....</code></p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
+              <a href="/2016/07/30/kafkaController机制/" rel="next" title="kafkaController机制">
+                <i class="fa fa-chevron-left"></i> kafkaController机制
+              </a>
             
-              
-                
-                <a class="post-title-link" href="/2016/07/27/thanks/" itemprop="url">
-                  Thanks oplinjie
-                </a>
-              
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
             
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-07-27T22:15:00+08:00" content="2016-07-27">
-              2016-07-27
-            </time>
-          </span>
-
-          
-            <span class="post-category" >
-              &nbsp; | &nbsp;
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                  <a href="/categories/life/" itemprop="url" rel="index">
-                    <span itemprop="name">life</span>
-                  </a>
-                </span>
-
-                
-                
-
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-
-          
-          
-
-          
+          </div>
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <p> Thanks Linjie~</p>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -554,6 +345,10 @@
 
 
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
         
@@ -573,8 +368,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="http://img5.imgtn.bdimg.com/it/u=2874763218,1653340119&fm=21&gp=0.jpg"
@@ -644,6 +448,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#缘由"><span class="nav-number">1.</span> <span class="nav-text">缘由</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#StreamingListener接口与应用"><span class="nav-number">1.1.</span> <span class="nav-text">StreamingListener接口与应用</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -740,6 +555,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
