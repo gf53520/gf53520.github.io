@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/01/23/ES学习之rest-tcp-层/index.html">
 <meta property="og:site_name" content="guifeng">
 <meta property="og:description" content="ES学习之rest &amp;amp; tcp 层ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕Search请求与Bulk请求，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2个知">
-<meta property="og:updated_time" content="2018-01-23T14:42:30.000Z">
+<meta property="og:updated_time" content="2018-01-23T14:54:29.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ES学习之rest & tcp 层.md">
 <meta name="twitter:description" content="ES学习之rest &amp;amp; tcp 层ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕Search请求与Bulk请求，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2个知">
@@ -338,7 +338,7 @@
 <figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="comment">// ActionModule configure 方法截取</span></div><div class="line"> <span class="keyword">for</span> (Map.Entry&lt;String, ActionEntry&gt; entry : actions.entrySet()) &#123;</div><div class="line">    <span class="comment">// bind the action as eager singleton, so the map binder one will reuse it</span></div><div class="line">    bind(entry.getValue().transportAction).asEagerSingleton();</div><div class="line">    transportActionsBinder.addBinding(entry.getValue().action).to(entry.getValue().transportAction).asEagerSingleton();</div><div class="line">    <span class="keyword">for</span> (Class supportAction : entry.getValue().supportTransportActions) &#123;</div><div class="line">        bind(supportAction).asEagerSingleton();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="comment">// HandledTransportAction 抽象类的构造方法之一</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="title">HandledTransportAction</span><span class="params">(Settings settings, String actionName, ThreadPool threadPool, TransportService transportService, ActionFilters actionFilters, IndexNameExpressionResolver indexNameExpressionResolver, Class&lt;Request&gt; request)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>(settings, actionName, threadPool, actionFilters, indexNameExpressionResolver, transportService.getTaskManager());</div><div class="line">    transportService.registerRequestHandler(actionName, request, ThreadPool.Names.SAME, <span class="keyword">new</span> TransportHandler()); <span class="comment">// 当`action`与当前实现类在`TransportService`中映射起来</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>，最终请求的执行逻辑走到了<code>TransportXXXXAction</code>类<code>doExecute</code>方法，该方法会返回请求的<code>requestId</code>和处理结果给发送端。</p>
-<h2 id="Ending"><a href="#Ending" class="headerlink" title="Ending"></a>Ending</h2><p>这里仅分析了es的Rest层到TCP层的整体逻辑，并未深入分析请求的处理过程，后面再深入分析下<strong>Search</strong>与<strong>Bulk</strong>请求的处理过程。</p>
+<h2 id="Ending"><a href="#Ending" class="headerlink" title="Ending"></a>Ending</h2><p>这里仅分析了es的Rest层到TCP层的整体逻辑，并未深入分析请求的处理过程，后面再深入分析下<strong>Search</strong>与<strong>Bulk</strong>请求的处理过程。内容有误，请轻喷。ps: 没有开启评论，也喷不了, 哈哈哈哈= =</p>
 
       
     </div>
