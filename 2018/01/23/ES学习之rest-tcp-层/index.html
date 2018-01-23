@@ -84,16 +84,16 @@
 
 
 
-<meta name="description" content="ES学习之rest &amp;amp; tcp 层ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕Search请求与Bulk请求，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2个知">
+<meta name="description" content="ES学习之rest &amp;amp; tcp 层ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕Search请求与Bulk请求，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。由于上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ES学习之rest & tcp 层.md">
 <meta property="og:url" content="http://yoursite.com/2018/01/23/ES学习之rest-tcp-层/index.html">
 <meta property="og:site_name" content="guifeng">
-<meta property="og:description" content="ES学习之rest &amp;amp; tcp 层ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕Search请求与Bulk请求，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2个知">
-<meta property="og:updated_time" content="2018-01-23T14:54:29.000Z">
+<meta property="og:description" content="ES学习之rest &amp;amp; tcp 层ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕Search请求与Bulk请求，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。由于上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2">
+<meta property="og:updated_time" content="2018-01-23T14:57:20.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ES学习之rest & tcp 层.md">
-<meta name="twitter:description" content="ES学习之rest &amp;amp; tcp 层ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕Search请求与Bulk请求，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2个知">
+<meta name="twitter:description" content="ES学习之rest &amp;amp; tcp 层ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕Search请求与Bulk请求，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。由于上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2">
 
 
 
@@ -295,7 +295,7 @@
       
 
       
-        <h1 id="ES学习之rest-amp-tcp-层"><a href="#ES学习之rest-amp-tcp-层" class="headerlink" title="ES学习之rest &amp; tcp 层"></a>ES学习之rest &amp; tcp 层</h1><p>ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕<strong>Search请求</strong>与<strong>Bulk请求</strong>，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2个知识点，代码基于2.4。</p>
+        <h1 id="ES学习之rest-amp-tcp-层"><a href="#ES学习之rest-amp-tcp-层" class="headerlink" title="ES学习之rest &amp; tcp 层"></a>ES学习之rest &amp; tcp 层</h1><p>ElasticSearch之前没有了解过，据说很多公司内部都有大量应用，如Github。作为一名数据工程师，当然也不能只局限于听过，遂打算学习下。最近粗略看了下es部分代码，主要围绕<strong>Search请求</strong>与<strong>Bulk请求</strong>，感觉这样看的效果感觉一般，遂打算写成书面形式，顺便也能练练写文章的能力。由于上述过程均涉及es的rest和tcp层通信部分，因此本文先分析下这2个知识点，代码基于2.4。</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">2.4版本ES通信层的实现主要基于Netty3：</div><div class="line">     a. Rest层核心类： NettyHttpServerTransport，相关代码位于包 org.elasticsearch.http</div><div class="line">     b. TCP层核心类： NettyTransport，相关代码位于包 org.elasticsearch.transport</div></pre></td></tr></table></figure>
 <h2 id="Rest-层"><a href="#Rest-层" class="headerlink" title="Rest 层"></a>Rest 层</h2><p>es代码组织很模块化，背后使用了Google依赖注入框架 <a href="https://github.com/google/guice/" title="guice" target="_blank" rel="external">guice</a>。其中，<code>HttpServerModule</code>是es的rest模块，其运用<code>guice</code>相关的<code>configure</code>方法将所有的接口与实现类相关联：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">()</span> </span>&#123;</div><div class="line"> bind(HttpServerTransport.class).to(httpServerTransportClass).asEagerSingleton();</div><div class="line"> bind(HttpServer.class).asEagerSingleton();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
