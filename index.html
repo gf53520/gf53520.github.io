@@ -235,6 +235,136 @@
             
               
                 
+                <a class="post-title-link" href="/2018/01/28/ES学习之search/" itemprop="url">
+                  ES学习之search
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-01-28T14:06:46+08:00" content="2018-01-28">
+              2018-01-28
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/learning/" itemprop="url" rel="index">
+                    <span itemprop="name">learning</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="ES学习之Search"><a href="#ES学习之Search" class="headerlink" title="ES学习之Search"></a>ES学习之Search</h1><p>前文从rest和tcp方面描述了ES的通信层逻辑，还未涉及到ES的核心功能，本文将说说ES Search过程的大致逻辑，代码基于2.4。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">ES的Search逻辑入口类：</div><div class="line">     a. Rest层入口类： RestSearchAction，相关代码位于包 org.elasticsearch.rest.action.search</div><div class="line">     b. TCP层入口类： TransportSearchAction，相关代码位于包 org.elasticsearch.action.search</div></pre></td></tr></table></figure>
+<h2 id="TransportSearchAction"><a href="#TransportSearchAction" class="headerlink" title="TransportSearchAction"></a>TransportSearchAction</h2><p>从前文分析可知，ES的搜索请求最终执行走到了<code>TransportSearchAction</code>类<code>doExecute</code>方法。<br>ES执行search时，会先去判断当前的query是否只需针对单个shard搜索，如果是的话会将search请求类型改为<code>QUERY_AND_FETCH</code>，从而提高搜索效率，</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="comment">// TransportSearchAction.doExecute 部分代码</span></div><div class="line"><span class="comment">// 获取集群当前状态</span></div><div class="line">ClusterState clusterState = clusterService.state(); </div><div class="line"><span class="comment">// 当search请求的index进行解析（包含通配符或者与当前时间有关的index）</span></div><div class="line">String[] concreteIndices = indexNameExpressionResolver.concreteIndices(clusterState, searchRequest); </div><div class="line"><span class="comment">// 对每个待搜索的index，获取其所有的routings，通过routings可以计算需要搜索当前index哪个shard</span></div><div class="line">Map&lt;String, Set&lt;String&gt;&gt; routingMap = indexNameExpressionResolver.resolveSearchRouting(clusterState, searchRequest.routing(), searchRequest.indices());</div><div class="line"><span class="comment">// 计算待搜索的shard数量</span></div><div class="line"><span class="keyword">int</span> shardCount = clusterService.operationRouting().searchShardsCount(clusterState, concreteIndices, routingMap);</div><div class="line"><span class="keyword">if</span> (shardCount == <span class="number">1</span>) &#123;</div><div class="line">   searchRequest.searchType(QUERY_AND_FETCH);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在对搜索类型优化后，ES会当前搜索类型执行不同的逻辑分支，其中ES默认搜索类型为<code>QUERY_THEN_FETCH</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">AbstractSearchAsyncAction searchAsyncAction;</div><div class="line">   <span class="keyword">switch</span>(searchRequest.searchType()) &#123;</div><div class="line">       <span class="keyword">case</span> DFS_QUERY_THEN_FETCH:</div><div class="line">           searchAsyncAction = <span class="keyword">new</span> SearchDfsQueryThenFetchAsyncAction(logger, searchService, clusterService,</div><div class="line">                   indexNameExpressionResolver, searchPhaseController, threadPool, searchRequest, listener);</div><div class="line">           <span class="keyword">break</span>;</div><div class="line">       <span class="keyword">case</span> QUERY_THEN_FETCH:</div><div class="line">           searchAsyncAction = <span class="keyword">new</span> SearchQueryThenFetchAsyncAction(logger, searchService, clusterService,</div><div class="line">                   indexNameExpressionResolver, searchPhaseController, threadPool, searchRequest, listener);</div><div class="line">           <span class="keyword">break</span>;</div><div class="line">       <span class="keyword">case</span> DFS_QUERY_AND_FETCH:</div><div class="line">           searchAsyncAction = <span class="keyword">new</span> SearchDfsQueryAndFetchAsyncAction(logger, searchService, clusterService,</div><div class="line">                   indexNameExpressionResolver, searchPhaseController, threadPool, searchRequest, listener);</div><div class="line">           <span class="keyword">break</span>;</div><div class="line">       <span class="keyword">case</span> QUERY_AND_FETCH:</div><div class="line">           searchAsyncAction = <span class="keyword">new</span> SearchQueryAndFetchAsyncAction(logger, searchService, clusterService,</div><div class="line">                   indexNameExpressionResolver, searchPhaseController, threadPool, searchRequest, listener);</div><div class="line">           <span class="keyword">break</span>;</div><div class="line">       <span class="keyword">case</span> SCAN:</div><div class="line">           searchAsyncAction = <span class="keyword">new</span> SearchScanAsyncAction(logger, searchService, clusterService, indexNameExpressionResolver,</div><div class="line">                   searchPhaseController, threadPool, searchRequest, listener);</div><div class="line">           <span class="keyword">break</span>;</div><div class="line">       <span class="keyword">case</span> COUNT:</div><div class="line">           searchAsyncAction = <span class="keyword">new</span> SearchCountAsyncAction(logger, searchService, clusterService, indexNameExpressionResolver,</div><div class="line">                   searchPhaseController, threadPool, searchRequest, listener);</div><div class="line">           <span class="keyword">break</span>;</div><div class="line">       <span class="keyword">default</span>:</div><div class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Unknown search type: ["</span> + searchRequest.searchType() + <span class="string">"]"</span>);</div><div class="line">   &#125;</div><div class="line">   searchAsyncAction.start();</div></pre></td></tr></table></figure>
+<h2 id="Search类别"><a href="#Search类别" class="headerlink" title="Search类别"></a>Search类别</h2><p>ES内置6种搜索类型：<code>QUERY_THEN_FETCH</code>,<code>DFS_QUERY_THEN_FETCH</code>, <code>QUERY_AND_FETCH</code>, <code>DFS_QUERY_AND_FETCH</code>, <code>SCAN</code>和<code>COUNT</code>。 其中<code>SCAN</code>可用<code>Scroll</code>功能代替，且<code>COUNT</code>可通过设置search参数<code>size</code>为0的<code>QUERY_THEN_FETCH</code>代替。</p>
+<h2 id="QUERY-AND-FETCH"><a href="#QUERY-AND-FETCH" class="headerlink" title="QUERY_AND_FETCH"></a><code>QUERY_AND_FETCH</code></h2><p><code>QUERY_AND_FETCH</code>是ES中最简单且执行速度最快的搜索：将query发送给index的各个shard，每个shard将返回符合query且个数为search参数<code>size</code>个的documents，随后进入merge过程，因此在执行大query时，merge的node上容易出现内存溢出。<br><code>QUERY_AND_FETCH</code>类型搜索对应于<code>SearchQueryAndFetchAsyncAction</code>, 该类初始化会初始化其基类<code>AbstractSearchAsyncAction</code>，在基类的初始化会计算当前search的一些信息：所需执行的shard总数，期望多少个shard给出响应，以及初始化存放shards响应的容器。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="comment">// AbstractSearchAsyncAction 构造函数</span></div><div class="line">shardsIts = clusterService.operationRouting().searchShards(clusterState, concreteIndices, routingMap, request.preference());</div><div class="line"><span class="comment">// 所需执行的shard总数</span></div><div class="line">expectedSuccessfulOps = shardsIts.size();</div><div class="line"><span class="comment">// 期望多少个shard给出响应, 一般情况下expectedSuccessfulOps等于expectedTotalOps，除非当前存在一些shard的所有分片均不可用</span></div><div class="line">expectedTotalOps = shardsIts.totalSizeWith1ForEmpty();</div><div class="line"><span class="comment">// 初始化存放shards响应的容器</span></div><div class="line">firstResults = <span class="keyword">new</span> AtomicArray&lt;&gt;(shardsIts.size());</div></pre></td></tr></table></figure>
+<p><code>QUERY_AND_FETCH</code>执行会调用基类<code>AbstractSearchAsyncAction</code>的<code>start</code>方法，该方法会对待处理的shard执行<code>performFirstPhase</code>，</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (expectedSuccessfulOps == <span class="number">0</span>) &#123;</div><div class="line">        <span class="comment">// no search shards to search on, bail with empty response (it happens with search across _all with no indices around and consistent with broadcast operations)</span></div><div class="line">        listener.onResponse(<span class="keyword">new</span> SearchResponse(InternalSearchResponse.empty(), <span class="keyword">null</span>, <span class="number">0</span>, <span class="number">0</span>, buildTookInMillis(), ShardSearchFailure.EMPTY_ARRAY));</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">int</span> shardIndex = -<span class="number">1</span>;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> ShardIterator shardIt : shardsIts) &#123;</div><div class="line">        shardIndex++;</div><div class="line">        <span class="keyword">final</span> ShardRouting shard = shardIt.nextOrNull();</div><div class="line">        <span class="keyword">if</span> (shard != <span class="keyword">null</span>) &#123;</div><div class="line">            performFirstPhase(shardIndex, shardIt, shard);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="comment">// really, no shards active in this group</span></div><div class="line">            onFirstPhaseResult(shardIndex, <span class="keyword">null</span>, <span class="keyword">null</span>, shardIt, <span class="keyword">new</span> NoShardAvailableActionException(shardIt.shardId()));</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line">基类 AbstractSearchAsyncAction的 performFirstPhase 调用路径：</div><div class="line">     performFirstPhase =&gt;  基类的 sendExecuteFirstPhase</div><div class="line">                       =&gt;  当前实现类 SearchQueryAndFetchAsyncAction 的 sendExecuteFirstPhase</div><div class="line">                       =&gt;  SearchServiceTransportAction 的 sendExecuteFetch</div><div class="line">                       =&gt;  TransportService 的 sendRequest <span class="comment">//将对当前shard的query请求发出</span></div></pre></td></tr></table></figure>
+<p>值得一提的是，基类<code>AbstractSearchAsyncAction</code>的<code>sendExecuteFirstPhase</code>会根据具体搜索类型来执行。由于这里的search类型是<code>QUERY_AND_FETCH</code>，因此执行实现类<code>SearchQueryAndFetchAsyncAction</code>的<code>sendExecuteFirstPhase</code>，最终会直接执行<code>SearchServiceTransportAction</code>的<code>sendExecuteFetch</code>将query请求发出，其中参数action为<code>QUERY_FETCH_ACTION_NAME</code>。</p>
+<p>结合上一篇，我们知道每种action都对应一个<code>HandledTransportAction</code>抽象类的实现来处理它，<code>QUERY_FETCH_ACTION_NAME</code>对应的handler为<code>SearchQueryFetchTransportHandler</code>，</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">SearchQueryFetchTransportHandler</span> <span class="keyword">extends</span> <span class="title">TransportRequestHandler</span>&lt;<span class="title">ShardSearchTransportRequest</span>&gt; </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">messageReceived</span><span class="params">(ShardSearchTransportRequest request, TransportChannel channel)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">        QueryFetchSearchResult result = searchService.executeFetchPhase(request);</div><div class="line">        channel.sendResponse(result);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>最终调用<code>SearchService</code>的<code>executeFetchPhase</code>方法，该方法是处理query的核心方法。</p>
+<h3 id="executeFetchPhase-执行过程"><a href="#executeFetchPhase-执行过程" class="headerlink" title="executeFetchPhase 执行过程"></a>executeFetchPhase 执行过程</h3><p>本方法会首先根据<code>ShardSearchRequest</code>最终调用<code>SearchService</code>的<code>createContext</code>来构建<code>SearchContext</code>实例。</p>
+<h2 id="QUERY-THEN-FETCH"><a href="#QUERY-THEN-FETCH" class="headerlink" title="QUERY_THEN_FETCH"></a><code>QUERY_THEN_FETCH</code></h2><p><code>QUERY_THEN_FETCH</code>主要是优化<code>QUERY_AND_FETCH</code>对merge端node的内存压力：各个shard并未返回document内容，因此对merge端的node内存十分友好。当merge结束后，再根据document ID去各个shard上获取实际的document内容。</p>
+<h2 id="未完待续…"><a href="#未完待续…" class="headerlink" title="未完待续…"></a>未完待续…</h2>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2018/01/23/ES学习之rest-tcp-层/" itemprop="url">
                   ES学习之rest & tcp 层.md
                 </a>
@@ -548,11 +678,11 @@
         
           
             <h2 id="缘由"><a href="#缘由" class="headerlink" title="缘由"></a>缘由</h2><p> 最近为了获取Spark Streaming的metrics，参考Streaming代码并发现Streaming提供了抽象接口<code>StreamingListener</code>, 以供用户去自定义Listener，当前Streaming已经存在一些Listener，如<code>StreamingJobProgressListener</code>, <code>RateController</code>, <code>StatsReportListener</code>.</p>
-<h3 id="StreamingListener接口与应用"><a href="#StreamingListener接口与应用" class="headerlink" title="StreamingListener接口与应用"></a>StreamingListener接口与应用</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/** Called when a receiver has reported an error */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onReceiverError</span></span>(receiverError: <span class="type">StreamingListenerReceiverError</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when a receiver has been stopped */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onReceiverStopped</span></span>(receiverStopped: <span class="type">StreamingListenerReceiverStopped</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when a batch of jobs has been submitted for processing. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchSubmitted</span></span>(batchSubmitted: <span class="type">StreamingListenerBatchSubmitted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a batch of jobs has started.  */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchStarted</span></span>(batchStarted: <span class="type">StreamingListenerBatchStarted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a batch of jobs has completed. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchCompleted</span></span>(batchCompleted: <span class="type">StreamingListenerBatchCompleted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a job of a batch has started. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onOutputOperationStarted</span></span>(</div><div class="line">      outputOperationStarted: <span class="type">StreamingListenerOutputOperationStarted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a job of a batch has completed. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onOutputOperationCompleted</span></span>(</div><div class="line">      outputOperationCompleted: <span class="type">StreamingListenerOutputOperationCompleted</span>) &#123; &#125;</div></pre></td></tr></table></figure>
+<h3 id="StreamingListener接口与应用"><a href="#StreamingListener接口与应用" class="headerlink" title="StreamingListener接口与应用"></a>StreamingListener接口与应用</h3><figure class="highlight scala"><table><tr><td class="code"><pre><div class="line"><span class="comment">/** Called when a receiver has reported an error */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onReceiverError</span></span>(receiverError: <span class="type">StreamingListenerReceiverError</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when a receiver has been stopped */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onReceiverStopped</span></span>(receiverStopped: <span class="type">StreamingListenerReceiverStopped</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when a batch of jobs has been submitted for processing. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchSubmitted</span></span>(batchSubmitted: <span class="type">StreamingListenerBatchSubmitted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a batch of jobs has started.  */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchStarted</span></span>(batchStarted: <span class="type">StreamingListenerBatchStarted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a batch of jobs has completed. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onBatchCompleted</span></span>(batchCompleted: <span class="type">StreamingListenerBatchCompleted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a job of a batch has started. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onOutputOperationStarted</span></span>(</div><div class="line">      outputOperationStarted: <span class="type">StreamingListenerOutputOperationStarted</span>) &#123; &#125;</div><div class="line"></div><div class="line">  <span class="comment">/** Called when processing of a job of a batch has completed. */</span></div><div class="line">  <span class="function"><span class="keyword">def</span> <span class="title">onOutputOperationCompleted</span></span>(</div><div class="line">      outputOperationCompleted: <span class="type">StreamingListenerOutputOperationCompleted</span>) &#123; &#125;</div></pre></td></tr></table></figure>
 <p>如上所见，<code>StreamingListener</code> trait提供了各种接口，其中利用<code>onBatchCompleted</code>可实现在每个batch执行结束之后kafka offset的保存，而不是在Streaming每个batch未执行之前就存储offset; 除此以外，综合利用这些接口可以获取Spark UI上各种metrics, 从而不需要使用Spark自带的Metrics系统（<code>Source</code>）实现metrics获取，并且自己实现具有很大的灵活性（需要注意操作阻塞问题，最好在函数内部异步执行较重的操作）。</p>
 <ul>
 <li><p>附: Spark Streaming其他的DeveloperApi</p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"> $ grep -n <span class="string">":: DeveloperApi ::"</span> src</div><div class="line">src/main/java/org/apache/spark/streaming/<span class="type">StreamingContextState</span>.java:<span class="number">23</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/java/org/apache/spark/streaming/util/<span class="type">WriteAheadLog</span>.java:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/java/org/apache/spark/streaming/util/<span class="type">WriteAheadLogRecordHandle</span>.java:<span class="number">21</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/api/java/<span class="type">JavaStreamingContext</span>.scala:<span class="number">599</span>:   * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">35</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">49</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">104</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">Receiver</span>.scala:<span class="number">29</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">BatchInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">InputInfoTracker</span>.scala:<span class="number">27</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">OutputOperationInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">ReceiverInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">26</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">62</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">98</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/<span class="type">StreamingContext</span>.scala:<span class="number">574</span>:   * :: <span class="type">DeveloperApi</span> ::</div></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="code"><pre><div class="line"> $ grep -n <span class="string">":: DeveloperApi ::"</span> src</div><div class="line">src/main/java/org/apache/spark/streaming/<span class="type">StreamingContextState</span>.java:<span class="number">23</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/java/org/apache/spark/streaming/util/<span class="type">WriteAheadLog</span>.java:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/java/org/apache/spark/streaming/util/<span class="type">WriteAheadLogRecordHandle</span>.java:<span class="number">21</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/api/java/<span class="type">JavaStreamingContext</span>.scala:<span class="number">599</span>:   * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">35</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">49</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">ActorReceiver</span>.scala:<span class="number">104</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/receiver/<span class="type">Receiver</span>.scala:<span class="number">29</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">BatchInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">InputInfoTracker</span>.scala:<span class="number">27</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">OutputOperationInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">ReceiverInfo</span>.scala:<span class="number">24</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">26</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">62</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/scheduler/<span class="type">StreamingListener</span>.scala:<span class="number">98</span>: * :: <span class="type">DeveloperApi</span> ::</div><div class="line">src/main/scala/org/apache/spark/streaming/<span class="type">StreamingContext</span>.scala:<span class="number">574</span>:   * :: <span class="type">DeveloperApi</span> ::</div></pre></td></tr></table></figure>
 </li>
 </ul>
 
@@ -856,7 +986,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-count">6</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
